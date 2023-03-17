@@ -1,0 +1,4 @@
+1S - Added parallel for to sparsemv.c outer for loop
+2S - Added parallel for to waxpby.c
+3F - Added parallel for to ddot.c
+4S - Added m256d vector to ddot.c
