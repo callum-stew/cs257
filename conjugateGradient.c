@@ -59,8 +59,7 @@ int conjugateGradient(struct mesh *A,
   /* Setup initial timestep */
   // p is of length ncols, copy x to p for sparse MV operation
   TICK();
-  //waxpby(nrow, x, 0.0, x, p);
-  memcpy(p, x, sizeof(double)*nrow);
+  waxpby(nrow, x, 0.0, x, p);
   TOCK(t2);
   TICK();
   sparsemv(A, p, Ap);
@@ -89,8 +88,7 @@ int conjugateGradient(struct mesh *A,
   {
     if (k == 1) {
       TICK();
-      //waxpby(nrow, r, 0.0, r, p);
-      memcpy(p, r, sizeof(double)*nrow);
+      waxpby(nrow, r, 0.0, r, p);
       TOCK(t2);
     } else {
       oldrtrans = rtrans;

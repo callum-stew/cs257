@@ -11,7 +11,13 @@
 6S - OMP parallel in ddot
         0.46 => 0.15
         Used v_t_total variable so they are not constantly locking each other up
-
+7F - Unable to use AVX in sparsemv as cur_vals will not align
+8S - Unloop inner for loop in sparsemv (loopFactor=4)
+        11.39 => 8.64
+9F - Unloop inner for loop in sparsemv (loopFactor=8)
+        8.64 => 9.01
+10S - OMP parralel sparsemv outer loop
+        8.64 => 2.45
 
 
 
@@ -83,6 +89,7 @@ int ddot (const int n, const double * const x, const double * const y, double * 
  * @brief Compute the dot product of two vectors
  * 
  * @param n Number of vector elements
+#include <immintrin.h>
  * @param x Input vector
  * @param y Input vector
  * @param result Pointer to scalar result value
@@ -132,3 +139,59 @@ for (int i=0; i< nrow; i++) {
       }
       y[i] = sum;
   }
+
+
+
+#include <stdlib.h>
+#include <ctype.h>
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <immintrin.h>
+
+#include "sparsemv.h"
+
+/**
+ * @brief Compute matrix vector product (y = A*x)
+ * 
+ * @param A Known matrix
+ * @param x Known vector
+ * @param y Return vector
+ * @return int 0 if no error
+ */
+int sparsemv(struct mesh *A, const double * const x, double * const y)
+{
+  const int nrow = (const int) A->local_nrow;
+
+  for (int i=0; i<nrow; i++) {
+      double sum = 0.0;
+      __m256d v_sum = _mm256_set1_pd(0.0);
+      //__m256d v_sum_total = _mm256_set1_pd(0.0);
+
+      const double * const cur_vals = (const double * const) A->ptr_to_vals_in_row[i];
+      const int * const cur_inds = (const int * const) A->ptr_to_inds_in_row[i];
+      const int cur_nnz = (const int) A->nnz_in_row[i];
+
+      const int loopFactor = 4;
+      const int loopN = (cur_nnz/loopFactor)*loopFactor;
+
+      for (int j=0; j<loopN; j+=loopFactor) {
+        __m256d v_val = _mm256_load_pd(cur_vals+j);
+        __m256d v_x = _mm256_set1_pd(0.0);//_mm256_load_pd(x+cur_inds[j]);
+        v_sum = _mm256_add_pd(_mm256_mul_pd(v_val, v_x), v_sum);
+      }
+
+      for (int j=loopN; j<cur_nnz; j++) {
+        sum += cur_vals[j]*x[cur_inds[j]];
+      }
+
+      double * sum_array = _mm_malloc(sizeof(double)*4, 32);
+      _mm256_store_pd(sum_array, v_sum);
+      sum += sum_array[0] + sum_array[1] + sum_array[2] + sum_array[3];
+      _mm_free(sum_array);
+
+      y[i] = sum;
+  }
+
+  return 0;
+}
