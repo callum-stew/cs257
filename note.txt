@@ -4,7 +4,13 @@
         0.82 => 0.37
 3F - Added func to waxpby for when beta=-1
         No change
-
+4F - Added OMP parallel to waxpby second for loop
+        No change (loop only has upto 4 calls)
+5S - Covert ddot to AVX and remove conditional
+        0.81 => 0.46
+6S - OMP parallel in ddot
+        0.46 => 0.15
+        Used v_t_total variable so they are not constantly locking each other up
 
 
 
