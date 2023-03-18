@@ -58,13 +58,18 @@ int conjugateGradient(struct mesh *A,
   /* Setup initial timestep */
   // p is of length ncols, copy x to p for sparse MV operation
   TICK();
-  waxpby(nrow, 1.0, x, 0.0, x, p);
+  //waxpby_a1b0(nrow, 1.0, x, 0.0, x, p);
+  memcpy(p,x,sizeof(double)*nrow);
   TOCK(t2);
   TICK();
   sparsemv(A, p, Ap);
   TOCK(t3);
   TICK();
-  waxpby(nrow, 1.0, b, -1.0, Ap, r);
+  //waxpby(nrow, 1.0, b, -1.0, Ap, r);
+  #pragma omp parallel for
+  for (int i=0; i<nrow; i++) {
+    r[i] = b[i] - Ap[i];
+  }
   TOCK(t2);
   TICK();
   ddot(nrow, r, r, &rtrans);
@@ -87,7 +92,8 @@ int conjugateGradient(struct mesh *A,
   {
     if (k == 1) {
       TICK();
-      waxpby(nrow, 1.0, r, 0.0, r, p);
+      //waxpby(nrow, 1.0, r, 0.0, r, p);
+      memcpy(p,r,sizeof(double)*nrow);
       TOCK(t2);
     } else {
       oldrtrans = rtrans;
@@ -96,7 +102,7 @@ int conjugateGradient(struct mesh *A,
       TOCK(t1); // 2*nrow ops
       double beta = rtrans / oldrtrans;
       TICK();
-      waxpby(nrow, 1.0, r, beta, p, p);
+      waxpby(nrow, r, beta, p, p);
       TOCK(t2); // 2*nrow ops
     }
 
@@ -116,8 +122,8 @@ int conjugateGradient(struct mesh *A,
     TOCK(t1); // 2*nrow ops
     alpha = rtrans / alpha;
     TICK();
-    waxpby(nrow, 1.0, x, alpha, p, x); // 2*nrow ops
-    waxpby(nrow, 1.0, r, -alpha, Ap, r);
+    waxpby(nrow, x, alpha, p, x); // 2*nrow ops
+    waxpby(nrow, r, -alpha, Ap, r);
     TOCK(t2); // 2*nrow ops
     *niters = k;
 
