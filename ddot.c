@@ -14,13 +14,13 @@ int ddot (const int n, const double * const x, const double * const y, double * 
   #pragma omp parallel reduction(+:local_result)
   {
     if (y==x){
-      #pragma omp for nowait
+      #pragma omp for
       for (int i=0; i<n; i++) {
         local_result += x[i]*x[i];
       }
 
     } else {
-      #pragma omp for nowait
+      #pragma omp for
       for (int i=0; i<n; i++) {
         local_result += x[i]*y[i];
       }

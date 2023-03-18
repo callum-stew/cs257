@@ -1,8 +1,8 @@
 1S - Added parallel for to sparsemv.c outer for loop
 2S - Added parallel for to waxpby.c
 3S - Added parallel for to ddot.c | variable difference but minnor
-4S - Added m256d vector to ddot.c | not as big a time gain as 3
-
+4F - Added m256d vector to ddot.c | not as big a time gain as 3 so reverting to 3
+5F - Tried to run m256d and parralel in ddot.c and best case senario waas no time gain.
 
 
 
