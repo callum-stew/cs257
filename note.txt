@@ -1,3 +1,14 @@
+1S - Convert waxpby to AVX and remove conditional as all values of alpha=1
+        1.17s => 0.82
+2S - OMP parallel in waxpby
+        0.82 => 0.37
+3F - Added func to waxpby for when beta=-1
+        No change
+
+
+
+
+
 1S - Added parallel for to sparsemv.c outer for loop
 2S - Added parallel for to waxpby.c
 3S - Added parallel for to ddot.c | variable difference but minnor

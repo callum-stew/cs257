@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <immintrin.h>
 
 #include "mytimer.h"
 #include "conjugateGradient.h"
@@ -45,9 +46,9 @@ int conjugateGradient(struct mesh *A,
   int nrow = A->local_nrow;
   int ncol = A->local_ncol;
 
-  double *r = (double *) malloc(sizeof(double) * nrow);
-  double *p = (double *) malloc(sizeof(double) * ncol); // In parallel case, A is rectangular
-  double *Ap = (double *) malloc(sizeof(double) * nrow);
+  double *r = (double *) _mm_malloc(sizeof(double) * nrow, 32);
+  double *p = (double *) _mm_malloc(sizeof(double) * ncol, 32); // In parallel case, A is rectangular
+  double *Ap = (double *) _mm_malloc(sizeof(double) * nrow, 32);
 
   *normr = 0.0;
   double rtrans = 0.0;
@@ -58,13 +59,14 @@ int conjugateGradient(struct mesh *A,
   /* Setup initial timestep */
   // p is of length ncols, copy x to p for sparse MV operation
   TICK();
-  waxpby(nrow, 1.0, x, 0.0, x, p);
+  //waxpby(nrow, x, 0.0, x, p);
+  memcpy(p, x, sizeof(double)*nrow);
   TOCK(t2);
   TICK();
   sparsemv(A, p, Ap);
   TOCK(t3);
   TICK();
-  waxpby(nrow, 1.0, b, -1.0, Ap, r);
+  waxpby(nrow, b, -1.0, Ap, r);
   TOCK(t2);
   TICK();
   ddot(nrow, r, r, &rtrans);
@@ -87,7 +89,8 @@ int conjugateGradient(struct mesh *A,
   {
     if (k == 1) {
       TICK();
-      waxpby(nrow, 1.0, r, 0.0, r, p);
+      //waxpby(nrow, r, 0.0, r, p);
+      memcpy(p, r, sizeof(double)*nrow);
       TOCK(t2);
     } else {
       oldrtrans = rtrans;
@@ -96,7 +99,7 @@ int conjugateGradient(struct mesh *A,
       TOCK(t1); // 2*nrow ops
       double beta = rtrans / oldrtrans;
       TICK();
-      waxpby(nrow, 1.0, r, beta, p, p);
+      waxpby(nrow, r, beta, p, p);
       TOCK(t2); // 2*nrow ops
     }
 
@@ -116,8 +119,8 @@ int conjugateGradient(struct mesh *A,
     TOCK(t1); // 2*nrow ops
     alpha = rtrans / alpha;
     TICK();
-    waxpby(nrow, 1.0, x, alpha, p, x); // 2*nrow ops
-    waxpby(nrow, 1.0, r, -alpha, Ap, r);
+    waxpby(nrow, x, alpha, p, x); // 2*nrow ops
+    waxpby(nrow, r, -alpha, Ap, r);
     TOCK(t2); // 2*nrow ops
     *niters = k;
 
@@ -136,9 +139,9 @@ int conjugateGradient(struct mesh *A,
   times[3] = t3; // sparsemv time
 
   /* Cleanup created arrays */
-  free(p);
-  free(Ap);
-  free(r);
+  _mm_free(p);
+  _mm_free(Ap);
+  _mm_free(r);
 
   /* Calculate total time spent */
   times[0] = mytimer() - t_begin;
