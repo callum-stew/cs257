@@ -25,14 +25,18 @@ int sparsemv(struct mesh *A, const float * const x, float * const y)
       const int * const cur_inds = (const int * const) A->ptr_to_inds_in_row[i];
       const int cur_nnz = (const int) A->nnz_in_row[i];
       int j;
-      const int loopN = (cur_nnz/4)*4;
+      const int loopN = (cur_nnz/8)*8;
 
 
-      for (j=0; j<loopN; j+=4) {
+      for (j=0; j<loopN; j+=8) {
         sum += (cur_vals[j]*x[cur_inds[j]]) \
              + (cur_vals[j+1]*x[cur_inds[j+1]]) \
              + (cur_vals[j+2]*x[cur_inds[j+2]]) \
-             + (cur_vals[j+3]*x[cur_inds[j+3]]);
+             + (cur_vals[j+3]*x[cur_inds[j+3]]) \
+             + (cur_vals[j+4]*x[cur_inds[j+4]]) \
+             + (cur_vals[j+5]*x[cur_inds[j+5]]) \
+             + (cur_vals[j+6]*x[cur_inds[j+6]]) \
+             + (cur_vals[j+7]*x[cur_inds[j+7]]);
       }
 
       for (; j<cur_nnz; j++) {
