@@ -9,26 +9,48 @@
 5S - Covert ddot to AVX and remove conditional as no time benefit.
         Tried using AVX/SSE functions to get hsum of __m256d but 
         there was not time benefit and storing to array is simpler.
+        double r_array[4] __attribute__((aligned(32))); was marginaly faster than _mm_malloc() and _mm_free
         0.81 => 0.46
 6S - OMP parallel in ddot
         0.46 => 0.15
         Used v_t_total variable so they are not constantly locking each other up
-7F - Unable to use AVX in sparsemv as cur_vals will not align
+7F - Used AVX with sparsemv could not align data so used loadu and i32gather for indexing
+        11.39 => 11.49
+7.5F - Used OMP on 7
+        11.49 => 3.15
 8S - Unloop inner for loop in sparsemv (loopFactor=4)
         11.39 => 8.50
 9S - Unloop inner for loop in sparsemv (loopFactor=8)
         8.64 => 8.15
 10S - OMP parralel sparsemv outer loop
         8.64 => 2.45
-11F - Loop unrole with intrinsics on ddot (loopFactor = 2)
-        No change
+11S - Loop unrole with intrinsics on ddot (loopFactor = 2)
+        faster at 200?
 12F - Loop unrole with intrinsics on waxpby (loopFactor = 2)
         No change
-13? - Converted to float instead of double. modified intrinsics.
+13
+14? - Converted to float instead of double. modified intrinsics.
         ddot: minor slowdown
         waxpby: 0.36 => 0.16
         sparsemv: 2.45 => 2.26
         But there is a considerable loss in accuracy.
+
+
+check if this
+#pragma omp for reduction(+:local_result)
+for (int i=loopN; i<n; i++) {
+  local_result += x[i]*y[i];
+}
+avges better in ddot
+
+
+
+
+
+
+
+
+
 
 
 1S - Added parallel for to sparsemv.c outer for loop
@@ -37,6 +59,9 @@
 4F - Added m256d vector to ddot.c | not as big a time gain as 3 so reverting to 3
 5F - Tried to run m256d and parralel in ddot.c and best case senario waas no time gain.
 6? - loop unrole sparsemv.c
+
+
+
 
 
 

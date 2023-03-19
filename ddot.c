@@ -13,19 +13,22 @@
  */
 int ddot (const int n, const double * const x, const double * const y, double * const result) {  
   double local_result = 0.0;
-  __m256d v_r = _mm256_set1_pd(0.0);
-  __m256d v_r_total = _mm256_set1_pd(0.0);
+  __m256d v_r_total = _mm256_setzero_pd();
 
-  const int loopFactor = 4;
+  const int loopFactor = 8;
   const int loopN = (n/loopFactor)*loopFactor;
 
-  #pragma omp parallel firstprivate(v_r) shared(v_r_total)
+  #pragma omp parallel shared(v_r_total)
   {
+     __m256d v_r = _mm256_setzero_pd();
+
     #pragma omp for
     for (int i=0; i<loopN; i+=loopFactor) {
-      __m256d v_x = _mm256_load_pd(x+i);
-      __m256d v_y = _mm256_load_pd(y+i);
-      v_r = _mm256_add_pd(_mm256_mul_pd(v_x, v_y), v_r);
+      __m256d v_x1 = _mm256_load_pd(x+i);
+      __m256d v_y1 = _mm256_load_pd(y+i);
+      __m256d v_x2 = _mm256_load_pd(x+i+4);
+      __m256d v_y2 = _mm256_load_pd(y+i+4);
+      v_r = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(v_x1, v_y1), _mm256_mul_pd(v_x2, v_y2)), v_r);
     }
     #pragma omp critical
     {
@@ -37,10 +40,9 @@ int ddot (const int n, const double * const x, const double * const y, double * 
     local_result += x[i]*y[i];
   }
 
-  double * r_array = _mm_malloc(sizeof(double)*4, 32);
+  double r_array[4] __attribute__((aligned(32)));
   _mm256_store_pd(r_array, v_r_total);
   local_result += r_array[0] + r_array[1] + r_array[2] + r_array[3];
-  _mm_free(r_array);
 
   *result = local_result;
   return 0;
