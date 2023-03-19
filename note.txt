@@ -6,16 +6,18 @@
         No change
 4F - Added OMP parallel to waxpby second for loop
         No change (loop only has upto 4 calls)
-5S - Covert ddot to AVX and remove conditional
+5S - Covert ddot to AVX and remove conditional as no time benefit.
+        Tried using AVX/SSE functions to get hsum of __m256d but 
+        there was not time benefit and storing to array is simpler.
         0.81 => 0.46
 6S - OMP parallel in ddot
         0.46 => 0.15
         Used v_t_total variable so they are not constantly locking each other up
 7F - Unable to use AVX in sparsemv as cur_vals will not align
 8S - Unloop inner for loop in sparsemv (loopFactor=4)
-        11.39 => 8.64
-9F - Unloop inner for loop in sparsemv (loopFactor=8)
-        8.64 => 9.01
+        11.39 => 8.50
+9S - Unloop inner for loop in sparsemv (loopFactor=8)
+        8.64 => 8.15
 10S - OMP parralel sparsemv outer loop
         8.64 => 2.45
 11F - Loop unrole with intrinsics on ddot (loopFactor = 2)
