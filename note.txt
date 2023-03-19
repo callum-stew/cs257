@@ -13,7 +13,10 @@
 6S - OMP parallel in ddot
         0.46 => 0.15
         Used v_t_total variable so they are not constantly locking each other up
-7F - Unable to use AVX in sparsemv as cur_vals will not align
+7F - Used AVX with sparsemv could not align data so used loadu and i32gather for indexing
+        11.39 => 11.49
+7.5F - Used OMP on 7
+        11.49 => 3.15
 8S - Unloop inner for loop in sparsemv (loopFactor=4)
         11.39 => 8.50
 9S - Unloop inner for loop in sparsemv (loopFactor=8)
@@ -24,7 +27,8 @@
         No change
 12F - Loop unrole with intrinsics on waxpby (loopFactor = 2)
         No change
-13? - Converted to float instead of double. modified intrinsics.
+13
+14? - Converted to float instead of double. modified intrinsics.
         ddot: minor slowdown
         waxpby: 0.36 => 0.16
         sparsemv: 2.45 => 2.26
