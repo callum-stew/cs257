@@ -18,15 +18,15 @@
         8.64 => 9.01
 10S - OMP parralel sparsemv outer loop
         8.64 => 2.45
-11F - Unloop ddot
+11F - Loop unrole with intrinsics on ddot (loopFactor = 2)
         No change
-12F - Unloop waxpby
+12F - Loop unrole with intrinsics on waxpby (loopFactor = 2)
         No change
 13? - Converted to float instead of double. modified intrinsics.
         ddot: minor slowdown
         waxpby: 0.36 => 0.16
         sparsemv: 2.45 => 2.26
-        But there is a considerable loss in accuracy
+        But there is a considerable loss in accuracy.
 
 
 1S - Added parallel for to sparsemv.c outer for loop
