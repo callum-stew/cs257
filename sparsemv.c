@@ -19,7 +19,7 @@ int sparsemv(struct mesh *A, const double * const x, double * const y)
 {
   const int nrow = (const int) A->local_nrow;
 
-  #pragma omp parallel for
+  //#pragma omp parallel for
   for (int i=0; i<nrow; i++) {
       double sum = 0.0;
       const double * const cur_vals = (const double * const) A->ptr_to_vals_in_row[i];
@@ -32,8 +32,7 @@ int sparsemv(struct mesh *A, const double * const x, double * const y)
 
       for (j=0; j<loopN; j+=4) {
         __m256d val_vec = _mm256_loadu_pd(&cur_vals[j]);
-        __m128i ind_vec = _mm_loadu_si128((__m128i*)&cur_inds[j]);
-        __m256d x_vec = _mm256_i32gather_pd(x, ind_vec, sizeof(double));
+        __m256d x_vec = _mm256_loadu_pd(&x[cur_inds[j]]);
         sum_vec = _mm256_add_pd(sum_vec, _mm256_mul_pd(val_vec, x_vec));
       }
 
