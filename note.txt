@@ -46,6 +46,13 @@ avges better in ddot
 
 
 
+TODO:
+Non AVX loop unroll ddot
+AVX loop unroll ddot
+Non AVX loop unroll waxpby
+AVX loop unroll waxpby
+
+Convert to double
 
 
 

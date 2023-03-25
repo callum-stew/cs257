@@ -15,7 +15,7 @@ int ddot (const int n, const double * const x, const double * const y, double * 
   double local_result = 0.0;
   __m256d v_r_total = _mm256_setzero_pd();
 
-  const int loopFactor = 8;
+  const int loopFactor = 16;
   const int loopN = (n/loopFactor)*loopFactor;
 
   #pragma omp parallel shared(v_r_total)
@@ -26,9 +26,13 @@ int ddot (const int n, const double * const x, const double * const y, double * 
     for (int i=0; i<loopN; i+=loopFactor) {
       __m256d v_x1 = _mm256_load_pd(x+i);
       __m256d v_y1 = _mm256_load_pd(y+i);
+      v_r = _mm256_add_pd(_mm256_mul_pd(v_x1, v_y1), v_r);
       __m256d v_x2 = _mm256_load_pd(x+i+4);
       __m256d v_y2 = _mm256_load_pd(y+i+4);
-      v_r = _mm256_add_pd(_mm256_add_pd(_mm256_mul_pd(v_x1, v_y1), _mm256_mul_pd(v_x2, v_y2)), v_r);
+      v_r = _mm256_add_pd(_mm256_mul_pd(v_x2, v_y2), v_r);
+      __m256d v_x3 = _mm256_load_pd(x+i+8);
+      __m256d v_y3 = _mm256_load_pd(y+i+8);
+      v_r = _mm256_add_pd(_mm256_mul_pd(v_x3, v_y3), v_r);
     }
     #pragma omp critical
     {
