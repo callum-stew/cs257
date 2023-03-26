@@ -15,7 +15,7 @@ int ddot (const int n, const double * const x, const double * const y, double * 
   double local_result = 0.0;
   __m256d v_r_total = _mm256_setzero_pd();
 
-  const int loopFactor = 16;
+  const int loopFactor = 12;
   const int loopN = (n/loopFactor)*loopFactor;
 
   #pragma omp parallel shared(v_r_total)
