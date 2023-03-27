@@ -10,6 +10,6 @@
 
 #include "mesh.h"
 
-int writeTimestep(char* dir, int *timestep, struct mesh * matrix, double* p, double* r, double* Ap, const double *const b, double *const x);
+int writeTimestep(char* dir, int *timestep, struct mesh * matrix, float* p, float* r, float* Ap, const float *const b, float *const x);
 
 #endif

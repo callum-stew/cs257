@@ -15,7 +15,7 @@
  * @param x Current state of the solution
  * @return int 0 if no error
  */
-int writeTimestep(char* dir, int *timestep, struct mesh* matrix, double* p, double* r __attribute__((unused)), double* Ap __attribute__((unused)), const double *const b __attribute__((unused)), double *const x) {
+int writeTimestep(char* dir, int *timestep, struct mesh* matrix, float* p, float* r __attribute__((unused)), float* Ap __attribute__((unused)), const float *const b __attribute__((unused)), float *const x) {
     char* filename;
 
     /* Check dir has been created, create if not */
@@ -47,35 +47,35 @@ int writeTimestep(char* dir, int *timestep, struct mesh* matrix, double* p, doub
     int dims[] = {matrix->size_x, matrix->size_y, matrix->size_z};
 
     /* Set x coordinates */
-    double * xArray = (double *) malloc(matrix->size_x*sizeof(double));
+    float * xArray = (float *) malloc(matrix->size_x*sizeof(float));
     for (int i = 0; i < matrix->size_x; i++) {
         xArray[i] = i;
     }
 
     /* Set y coordinates */
-    double * yArray = (double *) malloc(matrix->size_y*sizeof(double));
+    float * yArray = (float *) malloc(matrix->size_y*sizeof(float));
     for (int i = 0; i < matrix->size_y; i++) {
         yArray[i] = i;
     }
 
     /* Set z coordinates */
-    double * zArray = (double *) malloc(matrix->size_z*sizeof(double));
+    float * zArray = (float *) malloc(matrix->size_z*sizeof(float));
     for (int i = 0; i < matrix->size_z; i++) {
         zArray[i] = i;
     }
 
     /* Create coordinates array */
-    double *coords[] = {xArray, yArray, zArray};
+    float *coords[] = {xArray, yArray, zArray};
 
     /* Generate mesh */
-    DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims, DB_DOUBLE, DB_COLLINEAR, optlist);
+    DBPutQuadmesh(dbfile, "quadmesh", NULL, coords, dims, ndims, DB_float, DB_COLLINEAR, optlist);
 
     /* Add variables */
-    DBPutQuadvar1(dbfile, "p_nodal", "quadmesh", p, dims, ndims, NULL, 0, DB_DOUBLE, DB_NODECENT, optlist);
-//    DBPutQuadvar1(dbfile, "r_nodal", "quadmesh", r, dims, ndims, NULL, 0, DB_DOUBLE, DB_NODECENT, optlist);
-//    DBPutQuadvar1(dbfile, "Ap_nodal", "quadmesh", Ap, dims, ndims, NULL, 0, DB_DOUBLE, DB_NODECENT, optlist);
-//    DBPutQuadvar1(dbfile, "b_nodal", "quadmesh", b, dims, ndims, NULL, 0, DB_DOUBLE, DB_NODECENT, optlist);
-    DBPutQuadvar1(dbfile, "x_nodal", "quadmesh", x, dims, ndims, NULL, 0, DB_DOUBLE, DB_NODECENT, optlist);
+    DBPutQuadvar1(dbfile, "p_nodal", "quadmesh", p, dims, ndims, NULL, 0, DB_float, DB_NODECENT, optlist);
+//    DBPutQuadvar1(dbfile, "r_nodal", "quadmesh", r, dims, ndims, NULL, 0, DB_float, DB_NODECENT, optlist);
+//    DBPutQuadvar1(dbfile, "Ap_nodal", "quadmesh", Ap, dims, ndims, NULL, 0, DB_float, DB_NODECENT, optlist);
+//    DBPutQuadvar1(dbfile, "b_nodal", "quadmesh", b, dims, ndims, NULL, 0, DB_float, DB_NODECENT, optlist);
+    DBPutQuadvar1(dbfile, "x_nodal", "quadmesh", x, dims, ndims, NULL, 0, DB_float, DB_NODECENT, optlist);
 
     /* Close and free everything. */
     DBFreeOptlist(optlist);

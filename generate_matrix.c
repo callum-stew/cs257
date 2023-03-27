@@ -17,7 +17,7 @@
  * @param xexact Exact solution (as computed by a direct solver)
  * @param use_7pt_stencil true if using 7 point stencil, otherwise use 27 point stencil
  */
-void generate_matrix(int nx, int ny, int nz, struct mesh **A, double **x, double **b, double **xexact, int use_7pt_stencil)
+void generate_matrix(int nx, int ny, int nz, struct mesh **A, float **x, float **b, float **xexact, int use_7pt_stencil)
 {
   *A = (struct mesh *) malloc(sizeof(struct mesh)); // Allocate matrix struct and fill it
 
@@ -35,19 +35,19 @@ void generate_matrix(int nx, int ny, int nz, struct mesh **A, double **x, double
 
   // Allocate arrays that are of length local_nrow
   (*A)->nnz_in_row = (int *) malloc(sizeof(int) * local_nrow);
-  (*A)->ptr_to_vals_in_row = (double **) malloc(sizeof(double *) * local_nrow);
+  (*A)->ptr_to_vals_in_row = (float **) malloc(sizeof(float *) * local_nrow);
   (*A)->ptr_to_inds_in_row = (int **) malloc(sizeof(int *) * local_nrow);
-  (*A)->ptr_to_diags = (double **) malloc(sizeof(double *) * local_nrow);
+  (*A)->ptr_to_diags = (float **) malloc(sizeof(float *) * local_nrow);
 
-  *x = (double *) _mm_malloc(sizeof(double) * local_nrow, 32);
-  *b = (double *) _mm_malloc(sizeof(double) * local_nrow, 32);
-  *xexact = (double *) malloc(sizeof(double) * local_nrow);
+  *x = (float *) _mm_malloc(sizeof(float) * local_nrow, 32);
+  *b = (float *) _mm_malloc(sizeof(float) * local_nrow, 32);
+  *xexact = (float *) malloc(sizeof(float) * local_nrow);
 
   // Allocate arrays that are of length local_nnz
-  (*A)->list_of_vals = (double *) malloc(sizeof(double) * local_nnz);
+  (*A)->list_of_vals = (float *) malloc(sizeof(float) * local_nnz);
   (*A)->list_of_inds = (int *) malloc(sizeof(int) * local_nnz);
 
-  double *curvalptr = (*A)->list_of_vals;
+  float *curvalptr = (*A)->list_of_vals;
   int *curindptr = (*A)->list_of_inds;
 
   long long nnzglobal = 0;
@@ -83,7 +83,7 @@ void generate_matrix(int nx, int ny, int nz, struct mesh **A, double **x, double
         (*A)->nnz_in_row[currow] = nnzrow;
         nnzglobal += nnzrow;
         (*x)[currow] = 0.0;
-        (*b)[currow] = 27.0 - ((double)(nnzrow - 1));
+        (*b)[currow] = 27.0 - ((float)(nnzrow - 1));
         (*xexact)[currow] = 1.0;
       }
     }
